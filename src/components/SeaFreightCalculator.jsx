@@ -29,7 +29,7 @@ const SeaFreightCalculator = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/calculate', formData);
+      const response = await axios.post('https://sea-freight-load-calculator-backend.onrender.com/api/calculate', formData);
       setResult(response.data);
       console.log('Calculation result:', response.data); // Debug log
     } catch (err) {
