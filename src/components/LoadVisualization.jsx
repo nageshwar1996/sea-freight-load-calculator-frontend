@@ -65,7 +65,7 @@ const LoadVisualization = ({ cargoItems, containerType }) => {
       <Canvas shadows>
         <PerspectiveCamera
           makeDefault
-          position={[20, 20, 20]}
+          position={[5, 5, 5]}
           fov={50}
           near={0.1}
           far={1000}
