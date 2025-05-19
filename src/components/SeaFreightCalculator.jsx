@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import LoadVisualization from './LoadVisualization';
+import PDFExport from './PDFExport';
 
 const SeaFreightCalculator = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ const SeaFreightCalculator = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPDF, setShowPDF] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -43,7 +45,7 @@ const SeaFreightCalculator = () => {
   // Create cargo items array for visualization
   const getCargoItems = () => {
     if (!formData.length || !formData.width || !formData.height) {
-      console.log('Missing dimensions'); // Debug log
+      console.log('Missing dimensions');
       return [];
     }
     
@@ -59,7 +61,6 @@ const SeaFreightCalculator = () => {
       });
     }
     
-    console.log('Generated cargo items:', items); // Debug log
     return items;
   };
 
@@ -206,6 +207,28 @@ const SeaFreightCalculator = () => {
                       </small>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {result && (
+                <div className="mt-4">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h3 className="mb-0">PDF Report</h3>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => setShowPDF(!showPDF)}
+                    >
+                      {showPDF ? 'Hide PDF' : 'Show PDF'}
+                    </button>
+                  </div>
+                  {showPDF && (
+                    <div className="border rounded p-3">
+                      <PDFExport
+                        calculationData={result}
+                        cargoItems={getCargoItems()}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
