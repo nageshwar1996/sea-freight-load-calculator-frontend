@@ -5,24 +5,46 @@ import LoadVisualization from './LoadVisualization';
 import PDFExport from './PDFExport';
 
 const SeaFreightCalculator = () => {
-  const [formData, setFormData] = useState({
-    length: '',
-    width: '',
-    height: '',
-    quantity: '1',
-    isFragile: false
-  });
+  const [items, setItems] = useState([
+    {
+      length: '',
+      width: '',
+      height: '',
+      quantity: '1',
+      isFragile: false
+    }
+  ]);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPDF, setShowPDF] = useState(false);
 
-  const handleChange = (e) => {
+  const handleItemChange = (index, e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
+    const newItems = [...items];
+    newItems[index] = {
+      ...newItems[index],
       [name]: type === 'checkbox' ? checked : value
-    }));
+    };
+    setItems(newItems);
+  };
+
+  const addItem = () => {
+    setItems([
+      ...items,
+      {
+        length: '',
+        width: '',
+        height: '',
+        quantity: '1',
+        isFragile: false
+      }
+    ]);
+  };
+
+  const removeItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    setItems(newItems);
   };
 
   const handleSubmit = async (e) => {
@@ -31,9 +53,9 @@ const SeaFreightCalculator = () => {
     setError('');
 
     try {
-      const response = await axios.post('https://sea-freight-load-calculator-backend.onrender.com/api/calculate', formData);
+      const response = await axios.post('http://localhost:5000/api/calculate', { items });
       setResult(response.data);
-      console.log('Calculation result:', response.data); // Debug log
+      console.log('Calculation result:', response.data);
     } catch (err) {
       setError('Error calculating freight. Please try again.');
       console.error('Calculation error:', err);
@@ -44,24 +66,27 @@ const SeaFreightCalculator = () => {
 
   // Create cargo items array for visualization
   const getCargoItems = () => {
-    if (!formData.length || !formData.width || !formData.height) {
-      console.log('Missing dimensions');
-      return [];
-    }
+    const allItems = [];
+    const colors = ['#4444ff', '#44ff44', '#ff4444', '#ff44ff', '#44ffff', '#ffff44'];
     
-    const items = [];
-    const quantity = parseInt(formData.quantity) || 1;
+    items.forEach((item, itemIndex) => {
+      if (!item.length || !item.width || !item.height) return;
+      
+      const quantity = parseInt(item.quantity) || 1;
+      const color = colors[itemIndex % colors.length];
+      
+      for (let i = 0; i < quantity; i++) {
+        allItems.push({
+          length: parseInt(item.length),
+          width: parseInt(item.width),
+          height: parseInt(item.height),
+          isFragile: item.isFragile,
+          color: color
+        });
+      }
+    });
     
-    for (let i = 0; i < quantity; i++) {
-      items.push({
-        length: Number(formData.length),
-        width: Number(formData.width),
-        height: Number(formData.height),
-        isFragile: formData.isFragile
-      });
-    }
-    
-    return items;
+    return allItems;
   };
 
   // Get container type from result
@@ -74,9 +99,9 @@ const SeaFreightCalculator = () => {
 
   // Debug effect
   useEffect(() => {
-    console.log('Current form data:', formData);
+    console.log('Current form data:', items);
     console.log('Current result:', result);
-  }, [formData, result]);
+  }, [items, result]);
 
   return (
     <div className="container mt-5">
@@ -88,74 +113,98 @@ const SeaFreightCalculator = () => {
             </div>
             <div className="card-body">
               <form onSubmit={handleSubmit}>
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Length (cm)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="length"
-                      value={formData.length}
-                      onChange={handleChange}
-                      required
-                      min="1"
-                    />
+                {items.map((item, index) => (
+                  <div key={index} className="border rounded p-3 mb-3">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h4 className="mb-0">Item {index + 1}</h4>
+                      {items.length > 1 && (
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => removeItem(index)}
+                        >
+                          Remove Item
+                        </button>
+                      )}
+                    </div>
+                    <div className="row">
+                      <div className="col-md-6 mb-3">
+                        <label className="form-label">Length (cm)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="length"
+                          value={item.length}
+                          onChange={(e) => handleItemChange(index, e)}
+                          required
+                          min="1"
+                        />
+                      </div>
+                      <div className="col-md-6 mb-3">
+                        <label className="form-label">Width (cm)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="width"
+                          value={item.width}
+                          onChange={(e) => handleItemChange(index, e)}
+                          required
+                          min="1"
+                        />
+                      </div>
+                    </div>
+                    <div className="row">
+                      <div className="col-md-6 mb-3">
+                        <label className="form-label">Height (cm)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="height"
+                          value={item.height}
+                          onChange={(e) => handleItemChange(index, e)}
+                          required
+                          min="1"
+                        />
+                      </div>
+                      <div className="col-md-6 mb-3">
+                        <label className="form-label">Quantity</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="quantity"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, e)}
+                          required
+                          min="1"
+                        />
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <div className="form-check">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          name="isFragile"
+                          checked={item.isFragile}
+                          onChange={(e) => handleItemChange(index, e)}
+                        />
+                        <label className="form-check-label">Fragile Cargo</label>
+                      </div>
+                    </div>
                   </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Width (cm)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="width"
-                      value={formData.width}
-                      onChange={handleChange}
-                      required
-                      min="1"
-                    />
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Height (cm)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="height"
-                      value={formData.height}
-                      onChange={handleChange}
-                      required
-                      min="1"
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">Quantity</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="quantity"
-                      value={formData.quantity}
-                      onChange={handleChange}
-                      required
-                      min="1"
-                    />
-                  </div>
-                </div>
-                <div className="mb-3">
-                  <div className="form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      name="isFragile"
-                      checked={formData.isFragile}
-                      onChange={handleChange}
-                    />
-                    <label className="form-check-label">Fragile Cargo</label>
-                  </div>
-                </div>
-                <div className="text-center">
+                ))}
+
+                <div className="d-flex justify-content-between mb-3">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={addItem}
+                  >
+                    Add Another Item
+                  </button>
                   <button
                     type="submit"
-                    className="btn btn-primary btn-lg"
+                    className="btn btn-primary"
                     disabled={loading}
                   >
                     {loading ? 'Calculating...' : 'Calculate'}
@@ -203,7 +252,7 @@ const SeaFreightCalculator = () => {
                     />
                     <div className="mt-2 text-center">
                       <small className="text-muted">
-                        Blue: Regular cargo | Red: Fragile cargo
+                        Different colors represent different types of items
                       </small>
                     </div>
                   </div>

@@ -130,7 +130,7 @@ const LoadVisualization = ({ cargoItems, containerType }) => {
               key={index}
               position={position}
               size={size}
-              color={item.isFragile ? '#ff4444' : '#4444ff'}
+              color={item.color || (item.isFragile ? '#ff4444' : '#4444ff')}
             />
           );
         })}

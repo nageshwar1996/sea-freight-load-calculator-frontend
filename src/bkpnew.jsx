@@ -14,23 +14,13 @@ function App() {
   const [products, setProducts] = useState([
     {
       id: 1,
-      name: "Boxes 1",
-      length: 500,
-      width: 400,
-      height: 300,
-      weight: 10,
-      quantity: 80,
-      type: "Standard Box"
-    },
-    {
-      id: 2,
-      name: "Sacks",
+      name: "Bag",
       length: 1000,
-      width: 450,
-      height: 300,
-      weight: 45,
-      quantity: 100,
-      type: "Sack"
+      width: 1000,
+      height: 1000,
+      weight: 30,
+      quantity: 1,
+      type: "Sacks" // Added type field
     }
   ]);
 
@@ -40,16 +30,6 @@ function App() {
     height: 2650,
     maxWeight: 24500
   };
-
-  const productTypes = [
-    "Standard Box",
-    "Sack",
-    "Pallet",
-    "Crate",
-    "Drum",
-    "Container",
-    "Other"
-  ];
 
   const calculateResults = () => {
     let totalPackages = 0;
@@ -127,7 +107,7 @@ function App() {
         height: "",
         weight: "",
         quantity: "1",
-        type: "Standard Box"
+        type: "" // Added type field
       }
     ]);
   };
@@ -245,12 +225,15 @@ function App() {
                       <label className="form-label">Product Type</label>
                       <select
                         className="form-select"
-                        value={product.type}
+                        value={product.type || ""}
                         onChange={(e) => handleProductChange(product.id, 'type', e.target.value)}
                       >
-                        {productTypes.map((type) => (
-                          <option key={type} value={type}>{type}</option>
-                        ))}
+                        <option value="">Select Type</option>
+                        <option value="Sacks">Sacks</option>
+                        <option value="Boxes">Boxes</option>
+                        <option value="Pallets">Pallets</option>
+                        <option value="Drums">Drums</option>
+                        <option value="Other">Other</option>
                       </select>
                     </div>
                   </div>
